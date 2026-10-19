@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>物理解題本</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#f5f6fa; --card:#fff; --text:#1f2430; --muted:#6b7280; --line:#e3e6ee;
+  --primary:#3b6cf6; --primary-d:#2a55d4; --ok:#16a34a; --danger:#dc2626; --tag:#eaf0ff;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#12141b;--card:#1b1e28;--text:#e8eaf0;--muted:#9aa1b2;--line:#2c3040;--tag:#232a45;--primary:#6c93ff;--primary-d:#8aa9ff}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+header{padding:28px 16px 12px;text-align:center}
+header h1{margin:0;font-size:1.8rem}
+header p{margin:4px 0 0;color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:12px 16px 60px;display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:860px){main{grid-template-columns:380px 1fr;align-items:start}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.panel h2{margin:0 0 12px;font-size:1.1rem}
+label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+textarea{min-height:90px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+button{padding:9px 14px;border:0;border-radius:8px;background:var(--primary);color:#fff;font:inherit;cursor:pointer}
+button:hover{background:var(--primary-d)}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.ghost:hover{background:var(--tag)}
+button.danger{background:transparent;color:var(--danger);border:1px solid var(--line)}
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.preview{margin-top:10px;padding:10px;border:1px dashed var(--line);border-radius:8px;min-height:44px;white-space:pre-wrap;word-break:break-word}
+.hint{font-size:.78rem;color:var(--muted);margin-top:6px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input{flex:2;min-width:140px}
+.toolbar select{flex:1;min-width:110px}
+.stats{color:var(--muted);font-size:.85rem;margin-bottom:10px}
+.item{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--card)}
+.item.done{border-left:5px solid var(--ok)}
+.item h3{margin:0 0 6px;font-size:1.05rem}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tag{background:var(--tag);color:var(--primary);padding:2px 9px;border-radius:99px;font-size:.78rem}
+.body{white-space:pre-wrap;word-break:break-word}
+.solution{margin-top:10px;padding:10px;border-left:4px solid var(--primary);background:var(--bg);border-radius:6px;display:none;white-space:pre-wrap;word-break:break-word}
+.solution.show{display:block}
+.item .actions{margin-top:10px}
+.empty{text-align:center;color:var(--muted);padding:30px 0}
+.katex-display{overflow-x:auto;overflow-y:hidden}
+</style>
+</head>
+<body>
+<header>
+  <h1>📘 物理解題本</h1>
+  <p>記錄題目、寫下詳解，公式用 LaTeX 漂亮呈現。</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2 id="formTitle">新增題目</h2>
+    <label for="title">題目標題</label>
+    <input id="title" placeholder="例如：斜面上的木塊">
+    <div class="row">
+      <div>
+        <label for="category">單元</label>
+        <select id="category">
+          <option>力學</option><option>熱學</option><option>波動</option>
+          <option>電磁學</option><option>光學</option><option>近代物理</option><option>其他</option>
+        </select>
+      </div>
+      <div>
+        <label for="difficulty">難度</label>
+        <select id="difficulty">
+          <option>★ 簡單</option><option selected>★★ 中等</option><option>★★★ 困難</option>
+        </select>
+      </div>
+    </div>
+    <label for="problem">題目內容（可用 $...$ 或 $$...$$）</label>
+    <textarea id="problem" placeholder="質量為 $m$ 的木塊沿傾角 $\theta$ 的光滑斜面下滑，求加速度。"></textarea>
+    <label for="solution">詳解</label>
+    <textarea id="solution" placeholder="沿斜面方向：$$ma = mg\sin\theta \Rightarrow a = g\sin\theta$$"></textarea>
+    <div class="hint">即時預覽（題目＋詳解）：</div>
+    <div class="preview" id="preview"></div>
+    <div class="actions">
+      <button id="saveBtn">儲存題目</button>
+      <button class="ghost" id="cancelBtn" style="display:none">取消編輯</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>我的題庫</h2>
+    <div class="toolbar">
+      <input id="search" placeholder="🔍 搜尋標題或內容">
+      <select id="filterCat"><option value="">全部單元</option></select>
+      <select id="filterStatus">
+        <option value="">全部</option><option value="todo">未掌握</option><option value="done">已掌握</option>
+      </select>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div id="list"></div>
+    <div class="actions">
+      <button class="ghost" id="exportBtn">匯出 JSON</button>
+      <button class="ghost" id="importBtn">匯入 JSON</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>
+  </section>
+</main>
+
+<script>
+const KEY = 'physics-notebook-v1';
+const CATS = ['力學','熱學','波動','電磁學','光學','近代物理','其他'];
+const MATH = {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false};
+
+const samples = [
+  {id:1,title:'斜面上的木塊',category:'力學',difficulty:'★★ 中等',done:false,
+   problem:String.raw`質量為 $m$ 的木塊沿傾角 $\theta$ 的光滑斜面由靜止下滑，求加速度 $a$。`,
+   solution:String.raw`沿斜面方向合力為 $mg\sin\theta$：
+$$ma = mg\sin\theta \;\Rightarrow\; a = g\sin\theta$$`},
+  {id:2,title:'平行板電容器的能量',category:'電磁學',difficulty:'★★ 中等',done:true,
+   problem:String.raw`電容 $C$ 的電容器充電至電壓 $V$，求儲存的能量。`,
+   solution:String.raw`$$U=\int_0^Q \frac{q}{C}\,dq=\frac{Q^2}{2C}=\frac12 CV^2$$`}
+];
+
+let items = load();
+let editingId = null;
+
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(Array.isArray(d)) return d; }catch(e){}
+  return samples.slice();
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){} }
+const $ = id => document.getElementById(id);
+
+function render(math){ if(window.renderMathInElement) renderMathInElement(math, MATH); }
+
+function updatePreview(){
+  const p = $('preview');
+  const pr = $('problem').value.trim(), so = $('solution').value.trim();
+  p.textContent = (pr ? '【題目】\n'+pr : '') + (so ? '\n\n【詳解】\n'+so : '');
+  if(!pr && !so) p.textContent = '（輸入內容後這裡會顯示公式）';
+  render(p);
+}
+
+function initFilters(){
+  const f = $('filterCat');
+  CATS.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; f.appendChild(o); });
+}
+
+function renderList(){
+  const q = $('search').value.trim().toLowerCase();
+  const cat = $('filterCat').value, st = $('filterStatus').value;
+  const list = $('list'); list.innerHTML = '';
+  const shown = items.filter(it =>
+    (!cat || it.category===cat) &&
+    (!st || (st==='done') === !!it.done) &&
+    (!q || (it.title+it.problem+it.solution).toLowerCase().includes(q))
+  );
+  $('stats').textContent = `共 ${items.length} 題，已掌握 ${items.filter(i=>i.done).length} 題；目前顯示 ${shown.length} 題`;
+  if(!shown.length){ list.innerHTML = '<div class="empty">還沒有符合的題目，試著新增一題吧！</div>'; return; }
+
+  shown.slice().reverse().forEach(it => {
+    const d = document.createElement('div'); d.className = 'item' + (it.done?' done':'');
+    const h = document.createElement('h3'); h.textContent = it.title;
+    const meta = document.createElement('div'); meta.className='meta';
+    [it.category, it.difficulty, it.done?'✅ 已掌握':'📝 練習中'].forEach(t=>{
+      const s=document.createElement('span'); s.className='tag'; s.textContent=t; meta.appendChild(s);
+    });
+    const b = document.createElement('div'); b.className='body'; b.textContent = it.problem;
+    const s = document.createElement('div'); s.className='solution'; s.textContent = it.solution || '（尚未填寫詳解）';
+    const a = document.createElement('div'); a.className='actions';
+    const mk=(txt,cls,fn)=>{const x=document.createElement('button');x.textContent=txt;if(cls)x.className=cls;x.onclick=fn;a.appendChild(x);return x;};
+    const tog = mk('顯示詳解','', ()=>{ s.classList.toggle('show'); tog.textContent = s.classList.contains('show')?'隱藏詳解':'顯示詳解'; });
+    mk(it.done?'標為未掌握':'標為已掌握','ghost',()=>{ it.done=!it.done; save(); renderList(); });
+    mk('編輯','ghost',()=>startEdit(it.id));
+    mk('刪除','danger',()=>{ if(confirm('確定刪除這題？')){ items=items.filter(x=>x.id!==it.id); save(); renderList(); } });
+    d.append(h,meta,b,s,a); list.appendChild(d);
+    render(d);
+  });
+}
+
+function startEdit(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  editingId = id;
+  $('title').value=it.title; $('category').value=it.category; $('difficulty').value=it.difficulty;
+  $('problem').value=it.problem; $('solution').value=it.solution;
+  $('formTitle').textContent='編輯題目'; $('saveBtn').textContent='更新題目'; $('cancelBtn').style.display='';
+  updatePreview(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function resetForm(){
+  editingId=null;
+  ['title','problem','solution'].forEach(k=>$(k).value='');
+  $('formTitle').textContent='新增題目'; $('saveBtn').textContent='儲存題目'; $('cancelBtn').style.display='none';
+  updatePreview();
+}
+
+$('saveBtn').onclick = () => {
+  const title=$('title').value.trim(), problem=$('problem').value.trim();
+  if(!title || !problem){ alert('請至少填寫「標題」與「題目內容」'); return; }
+  const data = {title,problem,solution:$('solution').value.trim(),category:$('category').value,difficulty:$('difficulty').value};
+  if(editingId){ Object.assign(items.find(x=>x.id===editingId), data); }
+  else{ items.push({id:Date.now(),done:false,...data}); }
+  save(); resetForm(); renderList();
+};
+$('cancelBtn').onclick = resetForm;
+['problem','solution'].forEach(k=>$(k).addEventListener('input',updatePreview));
+['search','filterCat','filterStatus'].forEach(k=>$(k).addEventListener('input',renderList));
+
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='physics-notebook.json'; a.click();
+  URL.revokeObjectURL(a.href);
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if(!Array.isArray(d)) throw 0;
+      items = d.filter(x=>x && x.title && x.problem).map(x=>({id:x.id||Date.now()+Math.random(),done:!!x.done,solution:'',category:'其他',difficulty:'★★ 中等',...x}));
+      save(); renderList(); alert('匯入成功！');
+    }catch(err){ alert('檔案格式不正確'); }
+  };
+  r.readAsText(f); e.target.value='';
+};
+
+initFilters();
+renderList();
+updatePreview();
+// KaTeX 以 defer 載入，載入完成後再渲染一次
+window.addEventListener('load', () => { renderList(); updatePreview(); });
+</script>
+</body>
+</html>
